@@ -147,6 +147,8 @@ function App() {
   const [editStatus, setEditStatus] = useState("");
   const [editAtualizado, setEditAtualizado] = useState(false);
   const [editObs, setEditObs] = useState("");
+  const [showNew, setShowNew] = useState(false);
+  const [newProc, setNewProc] = useState({sheet:"Catálogo",cat:"",servico:"",nome:"",doc:"",dataPrev:"",status:"Pendente"});
 
   useEffect(() => {
     const stored = localStorage.getItem(STORAGE_KEY);
@@ -189,6 +191,21 @@ function App() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a"); a.href=url; a.download="revisao_processos_2026.csv"; a.click();
     URL.revokeObjectURL(url);
+  };
+
+  const saveNew = () => {
+    if (!newProc.nome.trim()) { alert("Preencha o nome do processo."); return; }
+    const id = "custom-" + Date.now();
+    const item = {...newProc, id, ultAtt:today, revisor:"", atualizado:false, obs:"", dataRevisao:"", dataPrev:newProc.dataPrev||null};
+    save([...data, item]);
+    setShowNew(false);
+    setNewProc({sheet:"Catálogo",cat:"",servico:"",nome:"",doc:"",dataPrev:"",status:"Pendente"});
+  };
+
+  const deleteProc = (id) => {
+    if (!confirm("Excluir este processo?")) return;
+    save(data.filter(d => d.id !== id));
+    setEditId(null);
   };
 
   const resetAll = () => {
@@ -289,6 +306,7 @@ function App() {
       React.createElement("div", {style:{display:"flex",gap:6,alignItems:"center"}},
         React.createElement("button", {style:ss.navBtn(view==="dashboard"),onClick:()=>setView("dashboard")}, "Dashboard"),
         React.createElement("button", {style:ss.navBtn(view==="list"),onClick:()=>setView("list")}, "Processos"),
+        React.createElement("button", {style:{padding:"6px 14px",fontSize:12,fontWeight:600,border:"none",borderRadius:6,cursor:"pointer",background:"#10b981",color:"#fff"},onClick:()=>setShowNew(true)}, "+ Novo Processo"),
         React.createElement("button", {style:ss.smBtn,onClick:exportCSV}, "Exportar CSV"),
         React.createElement("button", {style:ss.smBtn,onClick:resetAll}, "Resetar")
       )
@@ -421,9 +439,62 @@ function App() {
           React.createElement("label",{style:ss.formLabel},"Observações"),
           React.createElement("textarea",{style:{...ss.formInput,minHeight:60,resize:"vertical"},value:editObs,onChange:e=>setEditObs(e.target.value),placeholder:"Notas da revisão..."})
         ),
-        React.createElement("div", {style:{display:"flex",justifyContent:"flex-end",gap:8,marginTop:18}},
-          React.createElement("button",{style:{padding:"8px 20px",fontSize:13,fontWeight:600,border:"1px solid #e2e8f0",borderRadius:6,background:"#fff",color:"#64748b",cursor:"pointer"},onClick:()=>setEditId(null)},"Cancelar"),
-          React.createElement("button",{style:{padding:"8px 20px",fontSize:13,fontWeight:600,border:"none",borderRadius:6,background:"#3b82f6",color:"#fff",cursor:"pointer"},onClick:saveEdit},"Salvar")
+        React.createElement("div", {style:{display:"flex",justifyContent:"space-between",marginTop:18}},
+          React.createElement("button",{style:{padding:"8px 16px",fontSize:12,fontWeight:600,border:"1px solid #fca5a5",borderRadius:6,background:"#fff",color:"#ef4444",cursor:"pointer"},onClick:()=>deleteProc(editId)},"Excluir"),
+          React.createElement("div",{style:{display:"flex",gap:8}},
+            React.createElement("button",{style:{padding:"8px 20px",fontSize:13,fontWeight:600,border:"1px solid #e2e8f0",borderRadius:6,background:"#fff",color:"#64748b",cursor:"pointer"},onClick:()=>setEditId(null)},"Cancelar"),
+            React.createElement("button",{style:{padding:"8px 20px",fontSize:13,fontWeight:600,border:"none",borderRadius:6,background:"#3b82f6",color:"#fff",cursor:"pointer"},onClick:saveEdit},"Salvar")
+          )
+        )
+      )
+    ),
+
+    // New Process Modal
+    showNew && React.createElement("div", {style:ss.modal, onClick:()=>setShowNew(false)},
+      React.createElement("div", {style:{...ss.modalBox,maxWidth:480}, onClick:e=>e.stopPropagation()},
+        React.createElement("div", {style:{fontSize:15,fontWeight:700,marginBottom:16,color:"#0f172a"}}, "Novo Processo"),
+        React.createElement("div",{style:{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}},
+          React.createElement("div", {style:{marginBottom:2}},
+            React.createElement("label",{style:ss.formLabel},"Aba"),
+            React.createElement("select",{style:{...ss.formInput,background:"#fff"},value:newProc.sheet,onChange:e=>setNewProc({...newProc,sheet:e.target.value})},
+              React.createElement("option",null,"Catálogo"), React.createElement("option",null,"Departamental")
+            )
+          ),
+          React.createElement("div", {style:{marginBottom:2}},
+            React.createElement("label",{style:ss.formLabel},"Status"),
+            React.createElement("select",{style:{...ss.formInput,background:"#fff"},value:newProc.status,onChange:e=>setNewProc({...newProc,status:e.target.value})},
+              React.createElement("option",null,"Pendente"), React.createElement("option",null,"Em Revisão"), React.createElement("option",null,"Revisado"), React.createElement("option",null,"Desativado")
+            )
+          )
+        ),
+        React.createElement("div", {style:{marginBottom:12,marginTop:12}},
+          React.createElement("label",{style:ss.formLabel},"Nome do Processo *"),
+          React.createElement("input",{style:ss.formInput,value:newProc.nome,onChange:e=>setNewProc({...newProc,nome:e.target.value}),placeholder:"Ex: Ativação Frontix"})
+        ),
+        React.createElement("div",{style:{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}},
+          React.createElement("div", {style:{marginBottom:12}},
+            React.createElement("label",{style:ss.formLabel},"Categoria"),
+            React.createElement("input",{style:ss.formInput,value:newProc.cat,onChange:e=>setNewProc({...newProc,cat:e.target.value}),placeholder:"Ex: Integrações",list:"cats-list"})
+          ),
+          React.createElement("div", {style:{marginBottom:12}},
+            React.createElement("label",{style:ss.formLabel},"Serviço"),
+            React.createElement("input",{style:ss.formInput,value:newProc.servico,onChange:e=>setNewProc({...newProc,servico:e.target.value}),placeholder:"Ex: Frontix"})
+          )
+        ),
+        React.createElement("datalist",{id:"cats-list"}, cats.map(c=>React.createElement("option",{key:c,value:c}))),
+        React.createElement("div",{style:{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}},
+          React.createElement("div", {style:{marginBottom:12}},
+            React.createElement("label",{style:ss.formLabel},"Código do Documento"),
+            React.createElement("input",{style:ss.formInput,value:newProc.doc,onChange:e=>setNewProc({...newProc,doc:e.target.value}),placeholder:"Ex: GS-REQ-055"})
+          ),
+          React.createElement("div", {style:{marginBottom:12}},
+            React.createElement("label",{style:ss.formLabel},"Data Prevista Revisão"),
+            React.createElement("input",{type:"date",style:ss.formInput,value:newProc.dataPrev,onChange:e=>setNewProc({...newProc,dataPrev:e.target.value})})
+          )
+        ),
+        React.createElement("div", {style:{display:"flex",justifyContent:"flex-end",gap:8,marginTop:8}},
+          React.createElement("button",{style:{padding:"8px 20px",fontSize:13,fontWeight:600,border:"1px solid #e2e8f0",borderRadius:6,background:"#fff",color:"#64748b",cursor:"pointer"},onClick:()=>setShowNew(false)},"Cancelar"),
+          React.createElement("button",{style:{padding:"8px 20px",fontSize:13,fontWeight:600,border:"none",borderRadius:6,background:"#10b981",color:"#fff",cursor:"pointer"},onClick:saveNew},"Adicionar")
         )
       )
     )
