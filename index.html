@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Revisão de Processos 2026 — Datasystem</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='6' fill='%230f172a'/><text x='16' y='22' font-size='18' text-anchor='middle' fill='white'>✓</text></svg>"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+<script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:#f8fafc;color:#1e293b;-webkit-font-smoothing:antialiased}
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:3px}
+::selection{background:#3b82f6;color:#fff}
+input,select,textarea,button{font-family:inherit}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useEffect, useCallback, useMemo } = React;
+
+const INITIAL_DATA = [
+  {id:"cs-1",sheet:"Catálogo",cat:"Integrações",servico:"Checkout Mobile",nome:"Ativação de Checkout Mobile",doc:"GS-REQ-002",ultAtt:"2021-12-03",dataPrev:"2026-03-13",status:"Pendente"},
+  {id:"cs-2",sheet:"Catálogo",cat:"Geral",servico:"Servidores Cloud",nome:"Servidores Cloud",doc:"GS-INC-003",ultAtt:"2022-11-03",dataPrev:"2026-03-13",status:"Pendente"},
+  {id:"cs-3",sheet:"Catálogo",cat:"Aplicativo",servico:"Mais que Um",nome:"Ativação +Q1",doc:"GS-REQ-037",ultAtt:"2024-07-26",dataPrev:"2026-03-13",status:"Pendente"},
+  {id:"cs-4",sheet:"Catálogo",cat:"Aplicativo",servico:"USE Analytics",nome:"Ativação USE Analytics",doc:"GS-REQ-007",ultAtt:"2024-08-16",dataPrev:"2026-03-13",status:"Pendente"},
+  {id:"cs-5",sheet:"Catálogo",cat:"CTC",servico:"Implantação",nome:"Requisição de Implantação CTC",doc:"GS-REQ-004",ultAtt:"2022-02-22",dataPrev:"2026-03-27",status:"Pendente"},
+  {id:"cs-6",sheet:"Catálogo",cat:"Integrações",servico:"Shipay",nome:"Ativação Shipay",doc:"GS-REQ-011",ultAtt:"2022-03-28",dataPrev:"2026-03-27",status:"Pendente"},
+  {id:"cs-7",sheet:"Catálogo",cat:"Integrações",servico:"Venda Link Cielo",nome:"Ativação Venda Link Cielo",doc:"GS-REQ-012",ultAtt:"2022-03-28",dataPrev:"2026-03-27",status:"Pendente"},
+  {id:"cs-8",sheet:"Catálogo",cat:"Retaguarda",servico:"Atualização parcial",nome:"Atualização parcial",doc:"GS-REQ-014",ultAtt:"2022-03-31",dataPrev:"2026-03-27",status:"Pendente"},
+  {id:"cs-9",sheet:"Catálogo",cat:"Retaguarda",servico:"Atualização total",nome:"Atualização total",doc:"GS-REQ-014-v1",ultAtt:"2022-03-31",dataPrev:"2026-03-27",status:"Pendente"},
+  {id:"cs-10",sheet:"Catálogo",cat:"Integrações",servico:"Tidas/Servipa",nome:"Ativação Tidas/Servipa",doc:"GS-REQ-052",ultAtt:"2025-09-30",dataPrev:"2026-03-27",status:"Pendente"},
+  {id:"cs-11",sheet:"Catálogo",cat:"Implantação",servico:"Desmembramento de Lojas",nome:"Req. Desmembramento de Lojas",doc:"GS-REQ-032",ultAtt:"2025-10-01",dataPrev:"2026-03-27",status:"Pendente"},
+  {id:"cs-12",sheet:"Catálogo",cat:"Fiscal",servico:"NFe",nome:"Instalação de certificado Digital A1",doc:"GS-REQ-019",ultAtt:"2022-04-22",dataPrev:"2026-04-10",status:"Pendente"},
+  {id:"cs-13",sheet:"Catálogo",cat:"Integrações",servico:"CRM e Bônus",nome:"Ativação CRM e Bônus",doc:"GS-REQ-021",ultAtt:"2022-05-19",dataPrev:"2026-04-10",status:"Pendente"},
+  {id:"cs-14",sheet:"Catálogo",cat:"Script",servico:"Débito Técnico",nome:"Req. Script de Débito Técnico",doc:"GS-REQ-023",ultAtt:"2022-05-23",dataPrev:"2026-04-10",status:"Pendente"},
+  {id:"cs-15",sheet:"Catálogo",cat:"Fiscal",servico:"NFCe",nome:"Configuração de terminal NFCe",doc:"GS-REQ-025",ultAtt:"2022-06-14",dataPrev:"2026-04-10",status:"Pendente"},
+  {id:"cs-16",sheet:"Catálogo",cat:"Fiscal",servico:"NFe",nome:"Configuração de certificado NFe",doc:"GS-REQ-024",ultAtt:"2022-06-14",dataPrev:"2026-04-10",status:"Pendente"},
+  {id:"cs-17",sheet:"Catálogo",cat:"Frente de Loja",servico:"TEF",nome:"Req. Configuração TEF",doc:"GS-REQ-026",ultAtt:"2022-06-20",dataPrev:"2026-04-24",status:"Pendente"},
+  {id:"cs-18",sheet:"Catálogo",cat:"CTC",servico:"Estação",nome:"Instalação de Estação CTC",doc:"GS-REQ-028",ultAtt:"2022-06-26",dataPrev:"2026-04-24",status:"Pendente"},
+  {id:"cs-19",sheet:"Catálogo",cat:"CTC",servico:"Usuário",nome:"Cadastro de usuário CTC",doc:"GS-REQ-027",ultAtt:"2022-06-26",dataPrev:"2026-04-24",status:"Pendente"},
+  {id:"cs-20",sheet:"Catálogo",cat:"Integrações",servico:"Link Shipay",nome:"Ativação Venda Link Shipay",doc:"GS-REQ-029",ultAtt:"2022-08-12",dataPrev:"2026-04-24",status:"Pendente"},
+  {id:"cs-21",sheet:"Catálogo",cat:"Retaguarda",servico:"Importação XML",nome:"Importação de XML na Entrada",doc:"GS-REQ-030",ultAtt:"2022-08-15",dataPrev:"2026-04-24",status:"Pendente"},
+  {id:"cs-22",sheet:"Catálogo",cat:"Retaguarda",servico:"OTB",nome:"Ativação OTB",doc:"GS-REQ-031",ultAtt:"2022-08-18",dataPrev:"2026-04-24",status:"Pendente"},
+  {id:"cs-23",sheet:"Catálogo",cat:"Retaguarda",servico:"Metas por Níveis",nome:"Ativação Metas por Níveis",doc:"GS-REQ-033",ultAtt:"2022-09-22",dataPrev:"2026-04-24",status:"Pendente"},
+  {id:"cs-24",sheet:"Catálogo",cat:"Integrações",servico:"Correios",nome:"Ativação de Correios",doc:"GS-REQ-034",ultAtt:"2022-09-22",dataPrev:"2026-04-24",status:"Pendente"},
+  {id:"cs-25",sheet:"Catálogo",cat:"Retaguarda",servico:"Limite Compra Score",nome:"Ativação Limite Compra por Score",doc:"GS-REQ-037b",ultAtt:"2022-10-27",dataPrev:"2026-05-15",status:"Pendente"},
+  {id:"cs-26",sheet:"Catálogo",cat:"Integrações",servico:"Cancelamento",nome:"Cancelamento de Integrações",doc:"GS-REQ-042",ultAtt:"2024-07-25",dataPrev:"2026-05-15",status:"Pendente"},
+  {id:"cs-27",sheet:"Catálogo",cat:"Integrações",servico:"MC Light",nome:"Ativação MC Light",doc:"GS-REQ-038",ultAtt:"2024-07-26",dataPrev:"2026-05-15",status:"Pendente"},
+  {id:"cs-28",sheet:"Catálogo",cat:"Aplicativo",servico:"Pré Venda",nome:"Ativação Pré Venda",doc:"GS-REQ-043",ultAtt:"2024-08-16",dataPrev:"2026-05-15",status:"Pendente"},
+  {id:"cs-29",sheet:"Catálogo",cat:"Aplicativo",servico:"Vitrine Infinita",nome:"Ativação Vitrine Infinita",doc:"GS-REQ-050",ultAtt:"2025-11-18",dataPrev:"2026-05-15",status:"Pendente"},
+  {id:"cs-30",sheet:"Catálogo",cat:"Aplicativo",servico:"USE Vendedor",nome:"Ativação USE Vendedor",doc:"GS-REQ-016",ultAtt:"2024-08-16",dataPrev:"2026-05-29",status:"Pendente"},
+  {id:"cs-31",sheet:"Catálogo",cat:"Aplicativo",servico:"Inventário",nome:"Ativação Inventário",doc:"GS-REQ-044",ultAtt:"2024-08-16",dataPrev:"2026-05-29",status:"Pendente"},
+  {id:"cs-32",sheet:"Catálogo",cat:"Aplicativo",servico:"Painel de Compras",nome:"Ativação Painel de Compras",doc:"GS-REQ-015",ultAtt:"2024-08-16",dataPrev:"2026-05-29",status:"Pendente"},
+  {id:"cs-33",sheet:"Catálogo",cat:"Aplicativo",servico:"Painel de Vendas",nome:"Ativação Painel de Vendas",doc:"GS-REQ-017",ultAtt:"2024-08-18",dataPrev:"2026-05-29",status:"Pendente"},
+  {id:"cs-34",sheet:"Catálogo",cat:"Integrações",servico:"Virtual Gate",nome:"Ativação Virtual Gate",doc:"GS-REQ-013",ultAtt:"2024-09-10",dataPrev:"2026-05-29",status:"Pendente"},
+  {id:"cs-35",sheet:"Catálogo",cat:"Script",servico:"Backup BD",nome:"Req. Backup de Banco de Dados",doc:"GS-REQ-046",ultAtt:"2024-09-16",dataPrev:"2026-05-29",status:"Pendente"},
+  {id:"cs-36",sheet:"Catálogo",cat:"Integrações",servico:"F360",nome:"Ativação F360",doc:"GS-REQ-009",ultAtt:"2024-09-16",dataPrev:"2026-05-29",status:"Pendente"},
+  {id:"cs-37",sheet:"Catálogo",cat:"Integrações",servico:"Giver",nome:"Ativação Giver",doc:"GS-REQ-010",ultAtt:"2024-09-16",dataPrev:"2026-05-29",status:"Pendente"},
+  {id:"cs-38",sheet:"Catálogo",cat:"Integrações",servico:"Indeva",nome:"Ativação Indeva",doc:"GS-REQ-005",ultAtt:"2024-09-16",dataPrev:"2026-06-10",status:"Pendente"},
+  {id:"cs-39",sheet:"Catálogo",cat:"Integrações",servico:"BoaVista",nome:"Ativação Conciliação BoaVista",doc:"GS-REQ-020",ultAtt:"2024-09-24",dataPrev:"2026-06-10",status:"Pendente"},
+  {id:"cs-40",sheet:"Catálogo",cat:"Retaguarda",servico:"Ambiente Homologação",nome:"Req. Ambiente de Homologação",doc:"GS-REQ-047",ultAtt:"2024-10-10",dataPrev:"2026-06-10",status:"Pendente"},
+  {id:"cs-41",sheet:"Catálogo",cat:"Integrações",servico:"DDA",nome:"Ativação de DDA",doc:"GS-REQ-022",ultAtt:"2024-10-10",dataPrev:"2026-06-10",status:"Pendente"},
+  {id:"cs-42",sheet:"Catálogo",cat:"Integrações",servico:"Nummus",nome:"Ativação Nummus",doc:"GS-REQ-049",ultAtt:"2024-10-16",dataPrev:"2026-06-10",status:"Pendente"},
+  {id:"cs-43",sheet:"Catálogo",cat:"Integrações",servico:"Infox",nome:"Ativação Infox",doc:"GS-REQ-036",ultAtt:"2024-12-08",dataPrev:"2026-06-10",status:"Pendente"},
+  {id:"cs-44",sheet:"Catálogo",cat:"Integrações",servico:"4middleware",nome:"Ativação Ecommerce 4middleware",doc:"GS-REQ-045",ultAtt:"2025-01-14",dataPrev:"2026-06-10",status:"Pendente"},
+  {id:"cs-45",sheet:"Catálogo",cat:"Projetos / PMO",servico:"PayDev",nome:"Req. Entrada de Projeto",doc:"DV-PMO-001",ultAtt:"2025-02-25",dataPrev:"2026-06-10",status:"Pendente"},
+  {id:"cs-46",sheet:"Catálogo",cat:"Projetos / PMO",servico:"Etiqueta",nome:"Req. Entrada de Etiqueta",doc:"DV-PMO-004",ultAtt:"2025-04-14",dataPrev:"2026-06-10",status:"Pendente"},
+  {id:"cs-47",sheet:"Catálogo",cat:"Projetos / PMO",servico:"Script",nome:"Req. Entrada de Script",doc:"DV-PMO-003",ultAtt:"2025-04-14",dataPrev:"2026-06-10",status:"Pendente"},
+  {id:"cs-48",sheet:"Catálogo",cat:"Integrações",servico:"Ollie",nome:"Ativação Ollie",doc:"GS-REQ-051",ultAtt:"2025-08-15",dataPrev:"2026-06-10",status:"Pendente"},
+  {id:"cs-49",sheet:"Catálogo",cat:"Aplicativo",servico:"Reseller",nome:"Ativação Reseller",doc:"GS-REQ-050b",ultAtt:"2025-12-10",dataPrev:"2026-06-10",status:"Pendente"},
+  {id:"dp-1",sheet:"Departamental",cat:"Desenvolvimento",servico:"Migração Ecommerce",nome:"Migração Ecommerce",doc:"DV-INT-001",ultAtt:"2022-02-21",dataPrev:"2026-03-13",status:"Em Revisão"},
+  {id:"dp-2",sheet:"Departamental",cat:"Infraestrutura",servico:"Onboarding",nome:"Onboarding de novos colaboradores",doc:"IN-REQ-002",ultAtt:"2022-03-10",dataPrev:"2026-03-13",status:"Em Revisão"},
+  {id:"dp-3",sheet:"Departamental",cat:"Serviços",servico:"Incidente Crítico",nome:"Ger. de Incidente Crítico",doc:"GS-INC-002",ultAtt:"2022-03-11",dataPrev:"2026-03-13",status:"Pendente"},
+  {id:"dp-4",sheet:"Departamental",cat:"Recursos Humanos",servico:"SESC",nome:"Credenciamento ao SESC",doc:"RH-002",ultAtt:"2022-03-16",dataPrev:"2026-03-13",status:"Pendente"},
+  {id:"dp-5",sheet:"Departamental",cat:"Recursos Humanos",servico:"Férias",nome:"Cadastro de férias",doc:"RH-001",ultAtt:"2022-03-17",dataPrev:"2026-04-03",status:"Pendente"},
+  {id:"dp-6",sheet:"Departamental",cat:"Administrativo",servico:"Venda Etiqueta",nome:"Req. Venda de Etiqueta",doc:"ADM-001",ultAtt:"2022-03-17",dataPrev:"2026-04-03",status:"Pendente"},
+  {id:"dp-7",sheet:"Departamental",cat:"Administrativo",servico:"Locação Coletor",nome:"Locação de Coletor de Dados",doc:"ADM-002",ultAtt:"2022-03-17",dataPrev:"2026-04-03",status:"Pendente"},
+  {id:"dp-8",sheet:"Departamental",cat:"Administrativo",servico:"Recepção",nome:"Organização da Recepção",doc:"ADM-003",ultAtt:"2022-03-17",dataPrev:"2026-04-03",status:"Pendente"},
+  {id:"dp-9",sheet:"Departamental",cat:"Serviços",servico:"Dúvidas",nome:"Gerenciamento de Dúvidas",doc:"SM-GS-005",ultAtt:"2022-03-23",dataPrev:"2026-04-03",status:"Pendente"},
+  {id:"dp-10",sheet:"Departamental",cat:"Serviços",servico:"Requisição de Serviço",nome:"Ger. Requisição de Serviço",doc:"SM-GS-004",ultAtt:"2022-03-23",dataPrev:"2026-04-03",status:"Pendente"},
+  {id:"dp-11",sheet:"Departamental",cat:"Administrativo",servico:"Atendimento",nome:"Atendimento clientes e colaboradores",doc:"ADM-004",ultAtt:"2022-03-24",dataPrev:"2026-04-17",status:"Pendente"},
+  {id:"dp-12",sheet:"Departamental",cat:"Recursos Humanos",servico:"Ajuda Custo Cursos",nome:"Ajuda de Custo para Cursos",doc:"RH-006",ultAtt:"2022-03-28",dataPrev:"2026-04-17",status:"Pendente"},
+  {id:"dp-13",sheet:"Departamental",cat:"Recursos Humanos",servico:"Atestados",nome:"Envio de atestados e declarações",doc:"RH-009",ultAtt:"2022-03-28",dataPrev:"2026-04-17",status:"Pendente"},
+  {id:"dp-14",sheet:"Departamental",cat:"Customer Success",servico:"Treinamento",nome:"Venda de Treinamento",doc:"CS-001",ultAtt:"2022-04-08",dataPrev:"2026-04-17",status:"Pendente"},
+  {id:"dp-15",sheet:"Departamental",cat:"Implantação",servico:"Berçário",nome:"Berçário de Implantação",doc:"IMP-005",ultAtt:"2022-04-12",dataPrev:"2026-04-17",status:"Pendente"},
+  {id:"dp-16",sheet:"Departamental",cat:"Recursos Humanos",servico:"Psicoterapia",nome:"Auxílio Psicoterapia",doc:"RH-007",ultAtt:"2022-04-25",dataPrev:"2026-04-17",status:"Pendente"},
+  {id:"dp-17",sheet:"Departamental",cat:"Recursos Humanos",servico:"Reajuste Salarial",nome:"Reajuste Salarial por Mérito",doc:"RH-003",ultAtt:"2022-04-25",dataPrev:"2026-04-17",status:"Pendente"},
+  {id:"dp-18",sheet:"Departamental",cat:"Recursos Humanos",servico:"Day Off",nome:"Solicitação de Day Off",doc:"RH-008",ultAtt:"2022-04-25",dataPrev:null,status:"Pendente"},
+  {id:"dp-19",sheet:"Departamental",cat:"Recursos Humanos",servico:"Veículos",nome:"Utilização de Veículos",doc:"RH-004",ultAtt:"2022-04-25",dataPrev:null,status:"Pendente"},
+  {id:"dp-20",sheet:"Departamental",cat:"Recursos Humanos",servico:"Multa Veículos",nome:"Multa de Veículos",doc:"RH-005",ultAtt:"2022-04-25",dataPrev:null,status:"Pendente"},
+  {id:"dp-21",sheet:"Departamental",cat:"Implantação",servico:"Go Live",nome:"Processo de Go Live",doc:"IMP-003",ultAtt:"2022-05-17",dataPrev:null,status:"Pendente"},
+  {id:"dp-22",sheet:"Departamental",cat:"Implantação",servico:"Pós Implantação",nome:"Análise pós implantação cadastro",doc:"IMP-002",ultAtt:"2022-05-18",dataPrev:null,status:"Pendente"},
+  {id:"dp-23",sheet:"Departamental",cat:"Implantação",servico:"Migração G2→G3",nome:"Migração USE G2 para USE G3",doc:"IMP-004",ultAtt:"2022-05-18",dataPrev:null,status:"Pendente"},
+  {id:"dp-24",sheet:"Departamental",cat:"Infraestrutura",servico:"Offboarding",nome:"Offboarding de colaboradores",doc:"IN-REQ-003",ultAtt:"2022-05-27",dataPrev:null,status:"Em Revisão"},
+  {id:"dp-25",sheet:"Departamental",cat:"Serviços",servico:"Aquisição HW",nome:"Aquisição Ativos TI Hardware",doc:"SM-GA-002",ultAtt:"2022-05-27",dataPrev:null,status:"Pendente"},
+  {id:"dp-26",sheet:"Departamental",cat:"Serviços",servico:"Descarte HW",nome:"Descarte Ativos TI Hardware",doc:"SM-GA-005",ultAtt:"2022-05-27",dataPrev:null,status:"Pendente"},
+  {id:"dp-27",sheet:"Departamental",cat:"Serviços",servico:"Garantia HW",nome:"Garantia Ativos TI Hardware",doc:"SM-GA-006",ultAtt:"2022-05-27",dataPrev:null,status:"Pendente"},
+  {id:"dp-28",sheet:"Departamental",cat:"Serviços",servico:"Ger. Ativos HW",nome:"Ger. Ativos TI Hardware",doc:"SM-GA-001",ultAtt:"2022-05-27",dataPrev:null,status:"Pendente"},
+  {id:"dp-29",sheet:"Departamental",cat:"Serviços",servico:"Realocação HW",nome:"Realocação Ativos TI Hardware",doc:"SM-GA-004",ultAtt:"2022-05-27",dataPrev:null,status:"Pendente"},
+  {id:"dp-30",sheet:"Departamental",cat:"Serviços",servico:"Reposição HW",nome:"Reposição Estoque Ativos TI HW",doc:"SM-GA-003",ultAtt:"2022-05-27",dataPrev:null,status:"Pendente"},
+  {id:"dp-31",sheet:"Departamental",cat:"Administrativo",servico:"Churrasqueira",nome:"Utilização da Churrasqueira",doc:"ADM-005",ultAtt:"2022-06-06",dataPrev:null,status:"Pendente"},
+  {id:"dp-32",sheet:"Departamental",cat:"Recursos Humanos",servico:"Eventos",nome:"Orçamentos Eventos",doc:"RH-013",ultAtt:"2022-06-07",dataPrev:null,status:"Pendente"},
+  {id:"dp-33",sheet:"Departamental",cat:"Financeiro",servico:"Passagens Aéreas",nome:"Solicit. Compra Passagens Aéreas",doc:"FIN-002",ultAtt:"2022-06-22",dataPrev:null,status:"Pendente"},
+  {id:"dp-34",sheet:"Departamental",cat:"Desenvolvimento",servico:"Paydev NA",nome:"Req. Entrada Projeto Paydev/NA",doc:"DV-PMO-002",ultAtt:"2022-06-22",dataPrev:null,status:"Pendente"},
+  {id:"dp-35",sheet:"Departamental",cat:"Desenvolvimento",servico:"Homologação",nome:"Homologação Melhorias USE",doc:"DV-PRD-001",ultAtt:"2022-06-23",dataPrev:null,status:"Pendente"},
+  {id:"dp-36",sheet:"Departamental",cat:"Recursos Humanos",servico:"Cordão",nome:"Troca de Cordão",doc:"RH-012",ultAtt:"2022-06-30",dataPrev:null,status:"Pendente"},
+  {id:"dp-37",sheet:"Departamental",cat:"Serviços",servico:"Mudanças",nome:"Gerenciamento de Mudanças",doc:"GS-GM-001",ultAtt:"2022-07-06",dataPrev:null,status:"Pendente"},
+  {id:"dp-38",sheet:"Departamental",cat:"Recursos Humanos",servico:"Av. Experiência",nome:"Avaliação de Experiência",doc:"RH-018",ultAtt:"2022-07-13",dataPrev:null,status:"Pendente"},
+  {id:"dp-39",sheet:"Departamental",cat:"Recursos Humanos",servico:"1on1",nome:"Feedback One on One",doc:"RH-019",ultAtt:"2022-07-13",dataPrev:null,status:"Pendente"},
+  {id:"dp-40",sheet:"Departamental",cat:"Recursos Humanos",servico:"Baby DS",nome:"Programa Baby DS",doc:"RH-014",ultAtt:"2022-07-13",dataPrev:null,status:"Pendente"},
+  {id:"dp-41",sheet:"Departamental",cat:"Recursos Humanos",servico:"Mov. Salarial",nome:"Movimentação Salarial",doc:"RH-015",ultAtt:"2022-07-19",dataPrev:null,status:"Pendente"},
+  {id:"dp-42",sheet:"Departamental",cat:"Recursos Humanos",servico:"Av. Desempenho",nome:"Avaliação de Desempenho",doc:"RH-017",ultAtt:"2022-07-20",dataPrev:null,status:"Pendente"},
+  {id:"dp-43",sheet:"Departamental",cat:"Recursos Humanos",servico:"Efetivação Estagiários",nome:"Efetivação Estagiários",doc:"RH-020",ultAtt:"2022-07-20",dataPrev:null,status:"Pendente"},
+  {id:"dp-44",sheet:"Departamental",cat:"Recursos Humanos",servico:"Endomarketing",nome:"Endomarketing Efetivação Estagiários",doc:"RH-021",ultAtt:"2022-07-20",dataPrev:null,status:"Pendente"},
+  {id:"dp-45",sheet:"Departamental",cat:"Recursos Humanos",servico:"Integração Extra",nome:"Integração extraordinária",doc:"RH-024",ultAtt:"2022-07-22",dataPrev:null,status:"Pendente"},
+  {id:"dp-46",sheet:"Departamental",cat:"Recursos Humanos",servico:"Integração",nome:"Processo de Integração",doc:"RH-022",ultAtt:"2022-07-22",dataPrev:null,status:"Pendente"},
+  {id:"dp-47",sheet:"Departamental",cat:"Recursos Humanos",servico:"Integração Oficial",nome:"Integração oficial",doc:"RH-023",ultAtt:"2022-07-25",dataPrev:null,status:"Pendente"},
+  {id:"dp-48",sheet:"Departamental",cat:"Recursos Humanos",servico:"Café CEO",nome:"Café com o CEO",doc:"RH-025",ultAtt:"2022-07-26",dataPrev:null,status:"Pendente"},
+  {id:"dp-49",sheet:"Departamental",cat:"Desenvolvimento",servico:"Releases",nome:"Processo Releases e Paralelas",doc:"DV-PRD-002",ultAtt:"2022-08-04",dataPrev:null,status:"Pendente"},
+];
+
+const STORAGE_KEY = "revisao-processos-2026-v2";
+const STATUS_COLORS = {
+  "Pendente": { bg: "#fef3c7", text: "#92400e", dot: "#f59e0b" },
+  "Em Revisão": { bg: "#dbeafe", text: "#1e40af", dot: "#3b82f6" },
+  "Revisado": { bg: "#d1fae5", text: "#065f46", dot: "#10b981" },
+  "Desativado": { bg: "#f3f4f6", text: "#6b7280", dot: "#9ca3af" },
+};
+const fmt = (d) => { if(!d) return "—"; const p=d.split("-"); return p[2]+"/"+p[1]+"/"+p[0]; };
+const today = new Date().toISOString().slice(0,10);
+
+function App() {
+  const [data, setData] = useState(null);
+  const [view, setView] = useState("dashboard");
+  const [filterSheet, setFilterSheet] = useState("Todos");
+  const [filterStatus, setFilterStatus] = useState("Todos");
+  const [filterCat, setFilterCat] = useState("Todos");
+  const [search, setSearch] = useState("");
+  const [editId, setEditId] = useState(null);
+  const [editRevisor, setEditRevisor] = useState("");
+  const [editStatus, setEditStatus] = useState("");
+  const [editAtualizado, setEditAtualizado] = useState(false);
+  const [editObs, setEditObs] = useState("");
+
+  useEffect(() => {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (stored) {
+      try { setData(JSON.parse(stored)); return; } catch {}
+    }
+    const init = INITIAL_DATA.map(d => ({...d, revisor:"", atualizado:false, obs:"", dataRevisao:""}));
+    setData(init);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(init));
+  }, []);
+
+  const save = useCallback((newData) => {
+    setData(newData);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(newData));
+  }, []);
+
+  const startEdit = (item) => {
+    setEditId(item.id);
+    setEditRevisor(item.revisor || "");
+    setEditStatus(item.status);
+    setEditAtualizado(item.atualizado || false);
+    setEditObs(item.obs || "");
+  };
+
+  const saveEdit = () => {
+    const newData = data.map(d => d.id === editId ? {
+      ...d, revisor: editRevisor, status: editStatus, atualizado: editAtualizado, obs: editObs,
+      dataRevisao: editStatus === "Revisado" ? today : d.dataRevisao
+    } : d);
+    save(newData);
+    setEditId(null);
+  };
+
+  const exportCSV = () => {
+    const headers = "ID;Nome;Categoria;Documento;Status;Revisor;Atualizado;Data Revisão;Observações\n";
+    const rows = data.map(d =>
+      [d.id,d.nome,d.cat,d.doc,d.status,d.revisor||"",d.atualizado?"Sim":"Não",d.dataRevisao||"",d.obs||""].join(";")
+    ).join("\n");
+    const blob = new Blob(["\uFEFF"+headers+rows], {type:"text/csv;charset=utf-8;"});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a"); a.href=url; a.download="revisao_processos_2026.csv"; a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const resetAll = () => {
+    if(!confirm("Resetar todos os dados para o estado inicial?")) return;
+    const init = INITIAL_DATA.map(d => ({...d, revisor:"", atualizado:false, obs:"", dataRevisao:""}));
+    save(init);
+  };
+
+  if (!data) return React.createElement("div", {style:{display:"flex",justifyContent:"center",alignItems:"center",height:"100vh",color:"#64748b"}}, "Carregando...");
+
+  const total = data.length;
+  const revisados = data.filter(d => d.status === "Revisado").length;
+  const emRevisao = data.filter(d => d.status === "Em Revisão").length;
+  const pendentes = data.filter(d => d.status === "Pendente").length;
+  const atualizados = data.filter(d => d.atualizado).length;
+  const pct = total > 0 ? Math.round((revisados / total) * 100) : 0;
+  const vencidos = data.filter(d => d.dataPrev && d.dataPrev < today && d.status === "Pendente").length;
+  const cats = [...new Set(data.map(d => d.cat))].sort();
+
+  const filtered = data.filter(d => {
+    if (filterSheet !== "Todos" && d.sheet !== filterSheet) return false;
+    if (filterStatus !== "Todos" && d.status !== filterStatus) return false;
+    if (filterCat !== "Todos" && d.cat !== filterCat) return false;
+    if (search && !d.nome.toLowerCase().includes(search.toLowerCase()) && !d.doc.toLowerCase().includes(search.toLowerCase()) && !d.servico.toLowerCase().includes(search.toLowerCase())) return false;
+    return true;
+  }).sort((a,b) => {
+    if (!a.dataPrev && b.dataPrev) return 1;
+    if (a.dataPrev && !b.dataPrev) return -1;
+    if (a.dataPrev && b.dataPrev) return a.dataPrev.localeCompare(b.dataPrev);
+    return 0;
+  });
+
+  const months = {};
+  data.forEach(d => {
+    if (!d.dataPrev) return;
+    const m = d.dataPrev.slice(0,7);
+    if (!months[m]) months[m] = {total:0,revisado:0,pendente:0,emRevisao:0};
+    months[m].total++;
+    if (d.status === "Revisado") months[m].revisado++;
+    else if (d.status === "Em Revisão") months[m].emRevisao++;
+    else months[m].pendente++;
+  });
+  const sortedMonths = Object.keys(months).sort();
+  const maxMonth = Math.max(...sortedMonths.map(m => months[m].total), 1);
+
+  const monthLabel = (m) => {
+    const [y,mo] = m.split("-");
+    const names = ["Jan","Fev","Mar","Abr","Mai","Jun","Jul","Ago","Set","Out","Nov","Dez"];
+    return names[parseInt(mo)-1]+"/"+y.slice(2);
+  };
+
+  const PctCircle = ({pct}) => {
+    const r=22, c=2*Math.PI*r, off=c-(pct/100)*c;
+    return React.createElement("div", {style:{position:"relative",width:56,height:56,margin:"8px auto 0"}},
+      React.createElement("svg", {width:56,height:56,viewBox:"0 0 56 56"},
+        React.createElement("circle", {cx:28,cy:28,r,fill:"none",stroke:"#e2e8f0",strokeWidth:5}),
+        React.createElement("circle", {cx:28,cy:28,r,fill:"none",stroke:"#3b82f6",strokeWidth:5,strokeDasharray:c,strokeDashoffset:off,strokeLinecap:"round",transform:"rotate(-90 28 28)",style:{transition:"stroke-dashoffset .6s ease"}})
+      ),
+      React.createElement("div", {style:{position:"absolute",inset:0,display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,fontWeight:700,color:"#1e293b"}}, pct+"%")
+    );
+  };
+
+  const Badge = ({st}) => {
+    const c = STATUS_COLORS[st] || STATUS_COLORS.Pendente;
+    return React.createElement("span", {style:{display:"inline-flex",alignItems:"center",gap:5,padding:"3px 9px",borderRadius:99,fontSize:11,fontWeight:600,background:c.bg,color:c.text}},
+      React.createElement("span", {style:{width:7,height:7,borderRadius:"50%",background:c.dot,flexShrink:0}}),
+      st
+    );
+  };
+
+  const ss = {
+    header:{background:"linear-gradient(135deg,#0f172a 0%,#1e3a5f 100%)",padding:"20px 24px",display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"wrap",gap:12},
+    body:{padding:"20px 24px",maxWidth:1200,margin:"0 auto"},
+    grid:{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(140px,1fr))",gap:12,marginBottom:20},
+    card:{background:"#fff",borderRadius:10,padding:"16px 18px",boxShadow:"0 1px 3px rgba(0,0,0,.06)"},
+    cardLabel:{fontSize:11,color:"#64748b",fontWeight:500,textTransform:"uppercase",letterSpacing:"0.04em"},
+    cardValue:{fontSize:26,fontWeight:700,marginTop:4,letterSpacing:"-0.02em"},
+    navBtn:(a)=>({padding:"6px 14px",fontSize:12,fontWeight:600,border:"none",borderRadius:6,cursor:"pointer",background:a?"#3b82f6":"rgba(255,255,255,0.1)",color:a?"#fff":"#94a3b8",transition:"all .15s"}),
+    smBtn:{padding:"4px 10px",fontSize:11,border:"1px solid rgba(255,255,255,.2)",borderRadius:5,background:"transparent",color:"#94a3b8",cursor:"pointer"},
+    select:{padding:"6px 10px",fontSize:12,border:"1px solid #e2e8f0",borderRadius:6,background:"#fff",color:"#334155",outline:"none"},
+    input:{padding:"6px 10px",fontSize:12,border:"1px solid #e2e8f0",borderRadius:6,background:"#fff",color:"#334155",outline:"none",flex:"1 1 180px",minWidth:140},
+    th:{textAlign:"left",padding:"8px 10px",borderBottom:"2px solid #e2e8f0",color:"#64748b",fontWeight:600,fontSize:11,textTransform:"uppercase",letterSpacing:"0.04em",position:"sticky",top:0,background:"#fff",zIndex:1},
+    td:{padding:"8px 10px",borderBottom:"1px solid #f1f5f9",verticalAlign:"middle",fontSize:12},
+    editBtn:{padding:"4px 10px",fontSize:11,fontWeight:600,border:"1px solid #e2e8f0",borderRadius:5,background:"#fff",color:"#3b82f6",cursor:"pointer"},
+    modal:{position:"fixed",inset:0,background:"rgba(15,23,42,.5)",display:"flex",justifyContent:"center",alignItems:"center",zIndex:100,padding:16},
+    modalBox:{background:"#fff",borderRadius:12,padding:24,width:"100%",maxWidth:420,boxShadow:"0 20px 60px rgba(0,0,0,.2)"},
+    formLabel:{fontSize:12,fontWeight:600,color:"#475569",display:"block",marginBottom:4},
+    formInput:{width:"100%",padding:"8px 10px",fontSize:13,border:"1px solid #e2e8f0",borderRadius:6,outline:"none",boxSizing:"border-box"},
+  };
+
+  return React.createElement("div", {style:{fontFamily:"'Inter',system-ui,sans-serif",background:"#f8fafc",minHeight:"100vh",color:"#1e293b"}},
+    // Header
+    React.createElement("div", {style:ss.header},
+      React.createElement("div", null,
+        React.createElement("h1", {style:{color:"#f1f5f9",fontSize:18,fontWeight:700,letterSpacing:"-0.02em",margin:0}}, "Revisão de Processos 2026"),
+        React.createElement("p", {style:{color:"#94a3b8",fontSize:12,margin:"4px 0 0"}}, "Catálogo de Serviço & Departamentais · "+total+" processos")
+      ),
+      React.createElement("div", {style:{display:"flex",gap:6,alignItems:"center"}},
+        React.createElement("button", {style:ss.navBtn(view==="dashboard"),onClick:()=>setView("dashboard")}, "Dashboard"),
+        React.createElement("button", {style:ss.navBtn(view==="list"),onClick:()=>setView("list")}, "Processos"),
+        React.createElement("button", {style:ss.smBtn,onClick:exportCSV}, "Exportar CSV"),
+        React.createElement("button", {style:ss.smBtn,onClick:resetAll}, "Resetar")
+      )
+    ),
+    React.createElement("div", {style:ss.body},
+      // KPIs
+      React.createElement("div", {style:ss.grid},
+        React.createElement("div", {style:ss.card}, React.createElement("div",{style:ss.cardLabel},"Total"), React.createElement("div",{style:ss.cardValue},total)),
+        React.createElement("div", {style:ss.card}, React.createElement("div",{style:ss.cardLabel},"Revisados"), React.createElement("div",{style:{...ss.cardValue,color:"#10b981"}},revisados)),
+        React.createElement("div", {style:ss.card}, React.createElement("div",{style:ss.cardLabel},"Em Revisão"), React.createElement("div",{style:{...ss.cardValue,color:"#3b82f6"}},emRevisao)),
+        React.createElement("div", {style:ss.card}, React.createElement("div",{style:ss.cardLabel},"Pendentes"), React.createElement("div",{style:{...ss.cardValue,color:"#f59e0b"}},pendentes)),
+        React.createElement("div", {style:ss.card}, React.createElement("div",{style:ss.cardLabel},"Vencidos"), React.createElement("div",{style:{...ss.cardValue,color:"#ef4444"}},vencidos)),
+        React.createElement("div", {style:ss.card}, React.createElement("div",{style:ss.cardLabel},"Progresso"), React.createElement(PctCircle,{pct})),
+        React.createElement("div", {style:ss.card}, React.createElement("div",{style:ss.cardLabel},"Atualizados"), React.createElement("div",{style:{...ss.cardValue,color:"#8b5cf6"}},atualizados, React.createElement("span",{style:{fontSize:13,color:"#94a3b8",fontWeight:400}},"/"+total)))
+      ),
+
+      // Dashboard view
+      view === "dashboard" && React.createElement(React.Fragment, null,
+        React.createElement("div", {style:ss.card},
+          React.createElement("div", {style:{fontSize:13,fontWeight:700,marginBottom:12,color:"#334155"}}, "Cronograma por mês"),
+          sortedMonths.map(m => {
+            const d = months[m]; const isPast = m < today.slice(0,7);
+            return React.createElement("div", {key:m, style:{display:"flex",alignItems:"center",gap:8,fontSize:12,marginBottom:4}},
+              React.createElement("div", {style:{width:52,flexShrink:0,fontWeight:600,color:isPast?"#94a3b8":"#334155"}}, monthLabel(m)),
+              React.createElement("div", {style:{flex:1,display:"flex",height:20,borderRadius:4,overflow:"hidden",background:"#f1f5f9"}},
+                d.revisado > 0 && React.createElement("div", {style:{width:(d.revisado/maxMonth*100)+"%",background:"#10b981",transition:"width .4s"}}),
+                d.emRevisao > 0 && React.createElement("div", {style:{width:(d.emRevisao/maxMonth*100)+"%",background:"#3b82f6",transition:"width .4s"}}),
+                d.pendente > 0 && React.createElement("div", {style:{width:(d.pendente/maxMonth*100)+"%",background:"#f59e0b",transition:"width .4s"}})
+              ),
+              React.createElement("div", {style:{width:30,textAlign:"right",fontSize:11,color:"#64748b",fontWeight:600}}, d.total)
+            );
+          }),
+          React.createElement("div", {style:{display:"flex",gap:16,fontSize:11,color:"#64748b",marginTop:8}},
+            React.createElement("span",{style:{display:"flex",alignItems:"center",gap:4}}, React.createElement("span",{style:{width:10,height:10,borderRadius:2,background:"#10b981"}}), "Revisado"),
+            React.createElement("span",{style:{display:"flex",alignItems:"center",gap:4}}, React.createElement("span",{style:{width:10,height:10,borderRadius:2,background:"#3b82f6"}}), "Em Revisão"),
+            React.createElement("span",{style:{display:"flex",alignItems:"center",gap:4}}, React.createElement("span",{style:{width:10,height:10,borderRadius:2,background:"#f59e0b"}}), "Pendente")
+          )
+        ),
+        React.createElement("div", {style:{...ss.card,marginTop:12}},
+          React.createElement("div", {style:{fontSize:13,fontWeight:700,marginBottom:12,color:"#334155"}}, "Por categoria"),
+          React.createElement("div", {style:{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(200px,1fr))",gap:8}},
+            cats.map(c => {
+              const items = data.filter(d=>d.cat===c);
+              const rev = items.filter(d=>d.status==="Revisado").length;
+              const p = items.length > 0 ? Math.round((rev/items.length)*100) : 0;
+              return React.createElement("div", {key:c, style:{padding:"10px 12px",background:"#f8fafc",borderRadius:8,border:"1px solid #e2e8f0"}},
+                React.createElement("div", {style:{fontSize:12,fontWeight:600,color:"#334155",marginBottom:6}}, c),
+                React.createElement("div", {style:{display:"flex",alignItems:"center",gap:8}},
+                  React.createElement("div", {style:{flex:1,height:6,borderRadius:3,background:"#e2e8f0",overflow:"hidden"}},
+                    React.createElement("div", {style:{height:"100%",borderRadius:3,background:p===100?"#10b981":"#3b82f6",width:p+"%",transition:"width .4s"}})
+                  ),
+                  React.createElement("span", {style:{fontSize:11,fontWeight:700,color:"#64748b"}}, rev+"/"+items.length)
+                )
+              );
+            })
+          )
+        )
+      ),
+
+      // List view
+      view === "list" && React.createElement(React.Fragment, null,
+        React.createElement("div", {style:{display:"flex",gap:8,marginBottom:16,flexWrap:"wrap",alignItems:"center"}},
+          React.createElement("select", {style:ss.select,value:filterSheet,onChange:e=>setFilterSheet(e.target.value)},
+            React.createElement("option",null,"Todos"), React.createElement("option",null,"Catálogo"), React.createElement("option",null,"Departamental")
+          ),
+          React.createElement("select", {style:ss.select,value:filterStatus,onChange:e=>setFilterStatus(e.target.value)},
+            React.createElement("option",null,"Todos"), React.createElement("option",null,"Pendente"), React.createElement("option",null,"Em Revisão"), React.createElement("option",null,"Revisado"), React.createElement("option",null,"Desativado")
+          ),
+          React.createElement("select", {style:ss.select,value:filterCat,onChange:e=>setFilterCat(e.target.value)},
+            React.createElement("option",null,"Todos"), ...cats.map(c=>React.createElement("option",{key:c},c))
+          ),
+          React.createElement("input", {style:ss.input,placeholder:"Buscar processo ou documento...",value:search,onChange:e=>setSearch(e.target.value)}),
+          React.createElement("span", {style:{fontSize:11,color:"#64748b",whiteSpace:"nowrap"}}, filtered.length+" resultados")
+        ),
+        React.createElement("div", {style:{...ss.card,padding:0,overflow:"auto"}},
+          React.createElement("table", {style:{width:"100%",borderCollapse:"separate",borderSpacing:0,fontSize:12}},
+            React.createElement("thead", null,
+              React.createElement("tr", null,
+                React.createElement("th",{style:ss.th},"Status"),
+                React.createElement("th",{style:ss.th},"Processo"),
+                React.createElement("th",{style:ss.th},"Categoria"),
+                React.createElement("th",{style:ss.th},"Documento"),
+                React.createElement("th",{style:ss.th},"Data Prevista"),
+                React.createElement("th",{style:ss.th},"Revisor"),
+                React.createElement("th",{style:ss.th},"Atualizado"),
+                React.createElement("th",{style:ss.th},"")
+              )
+            ),
+            React.createElement("tbody", null,
+              filtered.map(d => {
+                const venc = d.dataPrev && d.dataPrev < today && d.status === "Pendente";
+                return React.createElement("tr", {key:d.id, style:{background:venc?"#fef2f2":"transparent"}},
+                  React.createElement("td",{style:ss.td}, React.createElement(Badge,{st:d.status})),
+                  React.createElement("td",{style:{...ss.td,fontWeight:600,maxWidth:220}},d.nome),
+                  React.createElement("td",{style:{...ss.td,color:"#64748b"}},d.cat),
+                  React.createElement("td",{style:{...ss.td,fontFamily:"monospace",fontSize:11,color:"#64748b"}},d.doc),
+                  React.createElement("td",{style:{...ss.td,color:venc?"#ef4444":"#334155",fontWeight:venc?600:400}},fmt(d.dataPrev)),
+                  React.createElement("td",{style:{...ss.td,color:d.revisor?"#334155":"#cbd5e1"}},d.revisor||"—"),
+                  React.createElement("td",{style:ss.td},d.atualizado?React.createElement("span",{style:{color:"#10b981",fontWeight:700}},"✓"):React.createElement("span",{style:{color:"#cbd5e1"}},"—")),
+                  React.createElement("td",{style:ss.td},React.createElement("button",{style:ss.editBtn,onClick:()=>startEdit(d)},"Editar"))
+                );
+              })
+            )
+          )
+        )
+      )
+    ),
+
+    // Modal
+    editId && React.createElement("div", {style:ss.modal, onClick:()=>setEditId(null)},
+      React.createElement("div", {style:ss.modalBox, onClick:e=>e.stopPropagation()},
+        React.createElement("div", {style:{fontSize:15,fontWeight:700,marginBottom:16,color:"#0f172a"}}, data.find(d=>d.id===editId)?.nome),
+        React.createElement("div", {style:{marginBottom:14}},
+          React.createElement("label",{style:ss.formLabel},"Status"),
+          React.createElement("select",{style:{...ss.formInput,background:"#fff"},value:editStatus,onChange:e=>setEditStatus(e.target.value)},
+            React.createElement("option",null,"Pendente"), React.createElement("option",null,"Em Revisão"), React.createElement("option",null,"Revisado"), React.createElement("option",null,"Desativado")
+          )
+        ),
+        React.createElement("div", {style:{marginBottom:14}},
+          React.createElement("label",{style:ss.formLabel},"Revisor(a)"),
+          React.createElement("input",{style:ss.formInput,value:editRevisor,onChange:e=>setEditRevisor(e.target.value),placeholder:"Nome de quem revisou"})
+        ),
+        React.createElement("div", {style:{marginBottom:14}},
+          React.createElement("label",{style:{display:"flex",alignItems:"center",gap:8,fontSize:13,cursor:"pointer"}},
+            React.createElement("input",{type:"checkbox",checked:editAtualizado,onChange:e=>setEditAtualizado(e.target.checked)}),
+            "Processo já atualizado no documento"
+          )
+        ),
+        React.createElement("div", {style:{marginBottom:14}},
+          React.createElement("label",{style:ss.formLabel},"Observações"),
+          React.createElement("textarea",{style:{...ss.formInput,minHeight:60,resize:"vertical"},value:editObs,onChange:e=>setEditObs(e.target.value),placeholder:"Notas da revisão..."})
+        ),
+        React.createElement("div", {style:{display:"flex",justifyContent:"flex-end",gap:8,marginTop:18}},
+          React.createElement("button",{style:{padding:"8px 20px",fontSize:13,fontWeight:600,border:"1px solid #e2e8f0",borderRadius:6,background:"#fff",color:"#64748b",cursor:"pointer"},onClick:()=>setEditId(null)},"Cancelar"),
+          React.createElement("button",{style:{padding:"8px 20px",fontSize:13,fontWeight:600,border:"none",borderRadius:6,background:"#3b82f6",color:"#fff",cursor:"pointer"},onClick:saveEdit},"Salvar")
+        )
+      )
+    )
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(React.createElement(App));
+</script>
+</body>
+</html>
